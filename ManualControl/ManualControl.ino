@@ -4,13 +4,16 @@
 #define LEDERR 3
 #define LEDSUC 4
 
-#define RMPWM 10
-#define RMC1 9
-#define RMC2 8
+#define RMPWM 6
+#define RMC1 7
+#define RMC2 5
 
-#define LMPWM 6
-#define LMC1 7
-#define LMC2 5
+#define LMPWM 10
+#define LMC1 9
+#define LMC2 8
+
+#define PWRMAXR 225
+#define PWRMAXL 255
 
 USB Usb;
 BTD Btd(&Usb);
@@ -18,15 +21,16 @@ PS3BT PS3(&Btd);
 
 Thread ledCtrlr = Thread();
 
-bool err = false;
 void showStatus() {
-  if (err) {
+  if (!PS3.PS3Connected) {
     digitalWrite(LEDERR, HIGH);
-  }
+  } else {
+    digitalWrite(LEDERR, LOW);
 
-  digitalWrite(LEDSUC, HIGH);
-  delay(50);
-  digitalWrite(LEDSUC, LOW);
+    digitalWrite(LEDSUC, HIGH);
+    delay(50);
+    digitalWrite(LEDSUC, LOW);
+  }
 }
 
 void setup() {
@@ -48,7 +52,8 @@ void setup() {
   ledCtrlr.setInterval(500);
 }
 
-int pwmR, pwmL;
+const int pwmR = PWRMAXR;
+const int pwmL = PWRMAXL;
 void loop() {
   // 状態点灯表示
   if (ledCtrlr.shouldRun())
@@ -58,42 +63,68 @@ void loop() {
   Usb.Task();
 
   // 速度設定
-  //  if (PS3.getButtonPress(L1)) {
-  pwmR = 255;
-  /*  } else {
-      pwmR = 155;
+  /*  if (PS3.getButtonPress(L1)) {
+      pwmR = PWRMAXR;
+    } else {
+      pwmR = int(PWRMAXR * 0.6);
     }
-    if (PS3.getButtonPress(R1)) {*/
-  pwmL = 255;
-  /*  } else {
-      pwmL = 155;
+    if (PS3.getButtonPress(R1)) {
+      pwmL = PWRMAXL;
+    } else {
+      pwmL = int(PWRMAXL * 0.6);
     }
   */
   // 作動
-  if (PS3.getButtonPress(LEFT)) {
+  /*  if (PS3.getButtonPress(TRIANGLE)) {
+      analogWrite(RMPWM, pwmR);
+      digitalWrite(RMC1, LOW);
+      digitalWrite(RMC2, HIGH);
+
+      analogWrite(LMPWM, pwmL);
+      digitalWrite(LMC1, HIGH);
+      digitalWrite(LMC2, LOW);
+    } else if (PS3.getButtonPress(UP)) {
+      analogWrite(RMPWM, pwmR);
+      digitalWrite(RMC1, HIGH);
+      digitalWrite(RMC2, LOW);
+
+      analogWrite(LMPWM, pwmR);
+      digitalWrite(LMC1, LOW);
+      digitalWrite(LMC2, HIGH);
+    } else {*/
+  if (PS3.getButtonPress(CIRCLE)) {
     analogWrite(RMPWM, pwmR);
     digitalWrite(RMC1, HIGH);
     digitalWrite(RMC2, LOW);
-  } else if (PS3.getButtonPress(DOWN)) {
+  } else if (PS3.getButtonPress(CROSS)) {
     analogWrite(RMPWM, pwmR);
     digitalWrite(RMC1, LOW);
+    digitalWrite(RMC2, HIGH);
+  } else if (PS3.getButtonPress(R1)) {
+    analogWrite(RMPWM, 0);
+    digitalWrite(RMC1, HIGH);
     digitalWrite(RMC2, HIGH);
   } else {
     analogWrite(LMPWM, 0);
     digitalWrite(RMC1, LOW);
     digitalWrite(RMC2, LOW);
   }
-  if (PS3.getButtonPress(CIRCLE)) {
+  if (PS3.getButtonPress(LEFT)) {
     analogWrite(LMPWM, pwmL);
     digitalWrite(LMC1, HIGH);
     digitalWrite(LMC2, LOW);
-  } else if (PS3.getButtonPress(CROSS)) {
+  } else if (PS3.getButtonPress(DOWN)) {
     analogWrite(LMPWM, pwmL);
     digitalWrite(LMC1, LOW);
+    digitalWrite(LMC2, HIGH);
+  } else if (PS3.getButtonPress(L1)) {
+    analogWrite(LMPWM, 0);
+    digitalWrite(LMC1, HIGH);
     digitalWrite(LMC2, HIGH);
   } else {
     analogWrite(LMPWM, 0);
     digitalWrite(LMC1, LOW);
     digitalWrite(LMC2, LOW);
   }
+  //  }
 }
